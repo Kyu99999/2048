@@ -6,9 +6,24 @@ using UnityEngine.UIElements;
 
 public class Gamemanager : MonoBehaviour
 {
+    public static Gamemanager instance;
+
     private GameObject[,] blockArr;
 
+    public GameObject[] blocks;
+
     public GameObject prefab;
+    private void Awake()
+    {
+        if(instance == null)
+        {
+            instance = this;
+        }
+        else
+        {
+            Destroy(this.gameObject);
+        }
+    }
 
     void Start()
     {
@@ -47,11 +62,16 @@ public class Gamemanager : MonoBehaviour
             {
                 for (int j = 0; j <= 3; j++)
                 {
-                    if (blockArr[i + 1, j] == null)
-                    {
-                            
-                    }
-                        
+                    //for (int k = 1; k <= 3 - i; k++)
+                    //{
+                    //    if (blockArr[i + k, j] == null)
+                    //    {
+                    //        blockArr[i + k, j] = blockArr[i + k - 1, j];
+                    //        blockArr[i + k - 1, j] = null;
+                    //    }
+                    //}
+
+                    
                 }
             }
         }
