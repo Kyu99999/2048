@@ -211,11 +211,13 @@ public class Gamemanager : MonoBehaviour
         }
     }
 
-    public void Move(int curX, int curY)
+    public void ReMove(int curX, int curY, int nextX, int nextY)
     {
-        int count = curX;
+        int count = arrNum;
         if (count > 0)
         {
+            count--;
+            if (blockArr[,])
             //if(block)
             //Move(count--, curY);
         }
