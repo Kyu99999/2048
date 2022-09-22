@@ -3,19 +3,29 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Experimental.AI;
 using UnityEngine.UIElements;
+using UnityEngine.SceneManagement;
+using TMPro;
+
 
 public class Gamemanager : MonoBehaviour
 {
     public static Gamemanager instance;
+    public TextMeshProUGUI text;
 
     private GameObject[,] blockArr;
 
-    public GameObject[] blocks;
+    public Sprite[] blockSprites;
 
     public GameObject prefab;
+    public RectTransform rectTransform;
 
     public float width = 1.4f;
     public float height = 1.4f;
+
+    private int blockCount = 0;
+    public int score = 0;
+
+    private bool isMove = false;
     private void Awake()
     {
         if (instance == null)
@@ -34,18 +44,16 @@ public class Gamemanager : MonoBehaviour
 
         BlockSpawn();
         BlockSpawn();
-        BlockSpawn();
-        BlockSpawn();
-        BlockSpawn();
-        BlockSpawn();
-        BlockSpawn();
-        BlockSpawn();
     }
 
 
     // Update is called once per frame
     void Update()
     {
+        if(Input.GetKeyDown(KeyCode.Space))
+        {
+            Debug.Log(rectTransform.transform.position);
+        }
         //Test Code
         if (Input.GetKeyDown(KeyCode.RightArrow))
         {
@@ -55,11 +63,13 @@ public class Gamemanager : MonoBehaviour
                 {
                     for (int i = 1; i <= 1 + x; i++)
                     {
-                        MoveR(3 - i, y);
+                        //MoveR(3 - i, y);
+                        Move(3 - i, y, 3 - i + 1, y);
                     }
                 }
             }
         }
+
         if (Input.GetKeyDown(KeyCode.LeftArrow))
         {
             for (int y = 0; y <= 3; y++)
@@ -68,71 +78,108 @@ public class Gamemanager : MonoBehaviour
                 {
                     for (int i = 1; i <= 4 - x; i++)
                     {
-                        MoveL(i, y);
+                        //MoveL(i, y);
+                        Move(i, y, i-1, y);
                     }
                 }
             }
         }
-        //
+
+        if(Input.GetKeyDown(KeyCode.UpArrow))
+        {
+            for(int x=0; x <= 3; x++)
+            {
+                for(int y=1; y<=3; y++)
+                {
+                    for(int i=1; i<=4-y; i++)
+                    {
+                        Move(x, i, x, i - 1);
+                    }
+                }
+            }
+        }
+
+        if(Input.GetKeyDown(KeyCode.DownArrow))
+        {
+            Debug.Log("test");
+            for (int x = 0; x <= 3; x++)
+            {
+                for (int y = 2; y >= 0; y--)
+                {
+                    for (int i = 1; i <= 1 + y; i++)
+                    {
+                        Move(x, 3 - i, x, 3 - i + 1);
+                    }
+                }
+            }
+        }
+
+        if (isMove)
+        {
+            BlockSpawn();
+            isMove = false;
+        }
+
+        //Test Code
+        if (Input.GetKeyDown(KeyCode.R))
+        {
+            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+        }
+
+        text.text = "Score : " + score;
     }
 
     public void BlockSpawn()
     {
-        while (true)
+        if (blockCount <= 15)
         {
-            int x = Random.Range(0, 4);
-            int y = Random.Range(0, 4);
-            if (blockArr[x, y] == null)
+            while (true)
             {
-                // Test Code      // 숫자 2 또는 4
-                int randomBlockNum = Random.Range(0, 2);
-                GameObject newObj = Instantiate(blocks[randomBlockNum], new Vector3(width * x, height * y, 0), Quaternion.identity);
-                blockArr[x, y] = newObj;
-                break;
+                int x = Random.Range(0, 4);
+                int y = Random.Range(0, 4);
+                if (blockArr[x, y] == null)
+                {
+                    int randomNum = Random.Range(0, 2);
+                    GameObject newBlock = Instantiate(prefab, new Vector3(width * x, -height * y, 0), Quaternion.identity);
+                    newBlock.GetComponent<Block>().Init(randomNum, blockSprites[randomNum]);
+                    blockArr[x, y] = newBlock;
+                    blockCount++;
+                    break;
+                }
             }
         }
     }
 
-    public void MoveR(int x, int y)
+    public void Move(int curX, int curY, int nextX, int nextY)  //x,y는 현재 위치, nextX, nextY는 다음 위치
     {
-        if (blockArr[x, y] != null && blockArr[x + 1, y] == null)
+        if (blockArr[curX, curY] != null && blockArr[nextX, nextY] == null)
         {
-            blockArr[x, y].transform.position = new Vector3(width * (x + 1), height * y, 0);
-            blockArr[x + 1, y] = blockArr[x, y];
-            blockArr[x, y] = null;
+            // 블럭 이동
+            Block block = blockArr[curX, curY].GetComponent<Block>();
+            block.Move(new Vector3(width * nextX, -height * nextY, 0));
+
+            blockArr[nextX, nextY] = blockArr[curX, curY];
+            blockArr[curX, curY] = null;
+            isMove = true;
         }
         // 같은 숫자일 때 결합
-        else if (blockArr[x, y] != null && blockArr[x + 1, y] != null && (blockArr[x + 1, y].GetComponent<Block>().number == blockArr[x, y].GetComponent<Block>().number))
+        else if (blockArr[curX, curY] != null && blockArr[nextX, nextY] != null && !blockArr[nextX, nextY].GetComponent<Block>().isCombine && (blockArr[curX, curY].GetComponent<Block>().number == blockArr[nextX, nextY].GetComponent<Block>().number))
         {
-            GameObject newObj = Instantiate(blocks[blockArr[x + 1, y].GetComponent<Block>().number + 1], new Vector3(width * (x + 1), height * y, 0), Quaternion.identity);
+            GameObject newBlock = Instantiate(prefab, new Vector3(width * nextX, -height * nextY, 0), Quaternion.identity);
+            int number = blockArr[curX, curY].GetComponent<Block>().number + 1;
 
-            Destroy(blockArr[x + 1, y]);
-            Destroy(blockArr[x, y]);
+            Block block = newBlock.GetComponent<Block>();
+            block.Init(number, blockSprites[number]);
+            block.Combine();
+            
+            Destroy(blockArr[curX, curY]);
+            Destroy(blockArr[nextX, nextY]);
 
-            blockArr[x, y] = null;
-            blockArr[x + 1, y] = newObj;
-        }
+            blockArr[curX, curY] = null;
+            blockArr[nextX, nextY] = newBlock;
 
-    }
-
-    public void MoveL(int x, int y)
-    {
-        if (blockArr[x, y] != null && blockArr[x - 1, y] == null)
-        {
-            blockArr[x, y].transform.position = new Vector3(width * (x - 1), height * y, 0);
-            blockArr[x - 1, y] = blockArr[x, y];
-            blockArr[x, y] = null;
-        }
-        // 같은 숫자일 때 결합
-        else if (blockArr[x, y] != null && blockArr[x - 1, y] != null && (blockArr[x - 1, y].GetComponent<Block>().number == blockArr[x, y].GetComponent<Block>().number))
-        {
-            GameObject newObj = Instantiate(blocks[blockArr[x - 1, y].GetComponent<Block>().number + 1], new Vector3(width * (x - 1), height * y, 0), Quaternion.identity);
-
-            Destroy(blockArr[x - 1, y]);
-            Destroy(blockArr[x, y]);
-
-            blockArr[x, y] = null;
-            blockArr[x - 1, y] = newObj;
+            blockCount--;
+            isMove = true;
         }
     }
 }
