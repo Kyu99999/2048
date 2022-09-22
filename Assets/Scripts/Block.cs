@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class Block : MonoBehaviour
 {
+    public Animator animator;
     public SpriteRenderer spriteRenderer;
 
     public float width = 1.4f;
@@ -19,6 +20,8 @@ public class Block : MonoBehaviour
     private void Awake()
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
+        animator = GetComponent<Animator>();
+        animator.SetTrigger("Spawn");
         score = 2;
     }
 
@@ -30,6 +33,7 @@ public class Block : MonoBehaviour
             if (transform.position == nextPos)
             {
                 isMoving = false;
+                
             }
 
         }
@@ -57,9 +61,16 @@ public class Block : MonoBehaviour
         nextPos = pos;
     }
 
-    public void Combine()
+    public void Combine(Sprite sprite)
     {
-        Gamemanager.instance.score += score;
+        Gamemanager.instance.score += score * 2;
+        
+        this.number++;
+        score *= 2;
+        spriteRenderer.sprite = sprite;
+
+        animator.SetTrigger("Combine");
+
         isCombine = true;
     }
 }
