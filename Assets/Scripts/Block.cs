@@ -33,10 +33,10 @@ public class Block : MonoBehaviour
             if (transform.position == nextPos)
             {
                 isMoving = false;
-                
             }
-
         }
+
+        
     }
 
     private void LateUpdate()
@@ -74,6 +74,12 @@ public class Block : MonoBehaviour
         animator.SetTrigger("Combine");
 
         isCombine = true;
+    }
+
+    public void SetZero()
+    {
+        score = 0;
+        spriteRenderer.sprite = null;
     }
 }
 

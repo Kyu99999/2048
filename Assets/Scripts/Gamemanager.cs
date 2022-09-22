@@ -11,7 +11,7 @@ public class Gamemanager : MonoBehaviour
     public static Gamemanager instance;
     public TextMeshProUGUI text;
 
-    private Block[,] blockArr;
+    public Block[,] blockArr;
 
     public Sprite[] blockSprites;
 
@@ -42,7 +42,7 @@ public class Gamemanager : MonoBehaviour
     {
         blockArr = new Block[arrNum, arrNum];  // 4x4 배열
 
-        for(int i = 0; i < arrNum; i++)
+        for (int i = 0; i < arrNum; i++)
         {
             for (int j = 0; j < arrNum; j++)
             {
@@ -62,6 +62,18 @@ public class Gamemanager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            for (int i = 0; i < arrNum; i++)
+            {
+                for (int j = 0; j < arrNum; j++)
+                {
+                    Debug.Log(blockArr[i, j].score);
+                }
+            }
+        }
+
+
         //Test Code
         if (Input.GetKeyDown(KeyCode.RightArrow))
         {
@@ -75,34 +87,32 @@ public class Gamemanager : MonoBehaviour
                         Move(arrNum - 1 - i, y, arrNum - 1 - i + 1, y);
                     }
 
-
-
                 }
             }
         }
 
         if (Input.GetKeyDown(KeyCode.LeftArrow))
         {
-            for (int y = 0; y <= arrNum -1; y++)
+            for (int y = 0; y <= arrNum - 1; y++)
             {
                 for (int x = 1; x <= arrNum - 1; x++)
                 {
                     for (int i = 1; i <= arrNum - x; i++)
                     {
                         //MoveL(i, y);
-                        Move(i, y, i-1, y);
+                        Move(i, y, i - 1, y);
                     }
                 }
             }
         }
 
-        if(Input.GetKeyDown(KeyCode.UpArrow))
+        if (Input.GetKeyDown(KeyCode.UpArrow))
         {
-            for(int x=0; x <= arrNum - 1; x++)
+            for (int x = 0; x <= arrNum - 1; x++)
             {
-                for(int y=1; y<= arrNum - 1; y++)
+                for (int y = 1; y <= arrNum - 1; y++)
                 {
-                    for(int i=1; i<= arrNum - y; i++)
+                    for (int i = 1; i <= arrNum - y; i++)
                     {
                         Move(x, i, x, i - 1);
                     }
@@ -110,7 +120,7 @@ public class Gamemanager : MonoBehaviour
             }
         }
 
-        if(Input.GetKeyDown(KeyCode.DownArrow))
+        if (Input.GetKeyDown(KeyCode.DownArrow))
         {
             Debug.Log("test");
             for (int x = 0; x <= arrNum - 1; x++)
@@ -148,14 +158,18 @@ public class Gamemanager : MonoBehaviour
             {
                 int x = Random.Range(0, arrNum);
                 int y = Random.Range(0, arrNum);
-                if (blockArr[x, y] == null)
+                if (blockArr[x, y].score == 0)
                 {
                     int randomNum = Random.Range(0, 2);
-                  
-                    GameObject newBlock = Instantiate(prefab, new Vector3(x, -y, 0), Quaternion.identity);
-                    Block block = newBlock.GetComponent<Block>();
-                    block.GetComponent<Block>().Init(randomNum, blockSprites[randomNum]);
-                    blockArr[x, y] = block;
+
+                    //GameObject newBlock = Instantiate(prefab, new Vector3(x, -y, 0), Quaternion.identity);
+                    //Block block = newBlock.GetComponent<Block>();
+                    //block.GetComponent<Block>().Init(randomNum, blockSprites[randomNum]);
+                    //blockArr[x, y] = block;
+
+                    blockArr[x, y].Init(randomNum, blockSprites[randomNum]);
+                    blockArr[x, y].Move(new Vector3(x, -y, 0));
+
                     blockCount++;
                     break;
                 }
@@ -165,30 +179,32 @@ public class Gamemanager : MonoBehaviour
 
     public void Move(int curX, int curY, int nextX, int nextY)  //x,y는 현재 위치, nextX, nextY는 다음 위치
     {
-        Block curBlock = blockArr[curX, curY].GetComponent<Block>();
-        Block nextBlock = blockArr[nextX, nextY].GetComponent<Block>();
+        Block curBlock = blockArr[curX, curY];
+        Block nextBlock = blockArr[nextX, nextY];
 
         //GameObject curObj = blockArr[curX, curY];
         //GameObject nextObj = blockArr[nextX, nextY];
 
-        if (curBlock != null && nextBlock == null)
+        if (curBlock.score != 0 && nextBlock.score == 0)
         {
             curBlock.Move(new Vector3(nextX, -nextY, 0));
 
             blockArr[nextX, nextY] = blockArr[curX, curY];
-            blockArr[curX, curY] = null;
+            blockArr[nextX, nextY].Init(curBlock.number, blockSprites[curBlock.number]);
+            blockArr[nextX, nextY].Move(new Vector3(nextX, -nextY, 0));
+            blockArr[curX, curY].score = 0;
             isMove = true;
         }
         // 같은 숫자일 때 결합
-        else if (curBlock != null && nextBlock != null && !nextBlock.isCombine && !curBlock.isCombine && (curBlock.number == nextBlock.number))
+        else if (curBlock.score != 0 && nextBlock.score != 0 && !nextBlock.isCombine && !curBlock.isCombine && (curBlock.number == nextBlock.number))
         {
-            Destroy(blockArr[nextX, nextY]);
+            //Destroy(blockArr[nextX, nextY].gameObject);
 
             curBlock.Move(new Vector3(nextX, -nextY, 0));
             curBlock.Combine(blockSprites[curBlock.number + 1]);
-            
+
             blockArr[nextX, nextY] = blockArr[curX, curY];
-            blockArr[curX, curY] = null;
+            blockArr[curX, curY].score = 0;
 
             blockCount--;
             isMove = true;
