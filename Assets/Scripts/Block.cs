@@ -22,7 +22,7 @@ public class Block : MonoBehaviour
         spriteRenderer = GetComponent<SpriteRenderer>();
         animator = GetComponent<Animator>();
         animator.SetTrigger("Spawn");
-        score = 2;
+        score = 0;
     }
 
     private void Update()
@@ -46,6 +46,7 @@ public class Block : MonoBehaviour
 
     public void Init(int number, Sprite sprite)
     {
+        score = 2;
         this.number = number;
         spriteRenderer.sprite = sprite;
 
@@ -63,6 +64,7 @@ public class Block : MonoBehaviour
 
     public void Combine(Sprite sprite)
     {
+
         Gamemanager.instance.score += score * 2;
         
         this.number++;

@@ -11,7 +11,7 @@ public class Gamemanager : MonoBehaviour
     public static Gamemanager instance;
     public TextMeshProUGUI text;
 
-    private GameObject[,] blockArr;
+    private Block[,] blockArr;
 
     public Sprite[] blockSprites;
 
@@ -40,7 +40,18 @@ public class Gamemanager : MonoBehaviour
 
     void Start()
     {
-        blockArr = new GameObject[arrNum, arrNum];  // 4x4 배열
+        blockArr = new Block[arrNum, arrNum];  // 4x4 배열
+
+        for(int i = 0; i < arrNum; i++)
+        {
+            for (int j = 0; j < arrNum; j++)
+            {
+                GameObject block = Instantiate(prefab);
+                blockArr[i, j] = block.GetComponent<Block>();
+            }
+        }
+
+
         Camera cam = Camera.main;
         cam.transform.position = new Vector3((arrNum / 2f) - 0.5f, (-arrNum / 2f) + 0.5f, -10f);
         BlockSpawn();
@@ -54,7 +65,7 @@ public class Gamemanager : MonoBehaviour
         //Test Code
         if (Input.GetKeyDown(KeyCode.RightArrow))
         {
-            for (int y = 0; y <= arrNum - 1; y++)
+            for (int y = 0; y < arrNum; y++)
             {
                 for (int x = arrNum - 2; x >= 0; x--)
                 {
@@ -63,6 +74,9 @@ public class Gamemanager : MonoBehaviour
                         //MoveR(3 - i, y);
                         Move(arrNum - 1 - i, y, arrNum - 1 - i + 1, y);
                     }
+
+
+
                 }
             }
         }
@@ -139,9 +153,9 @@ public class Gamemanager : MonoBehaviour
                     int randomNum = Random.Range(0, 2);
                   
                     GameObject newBlock = Instantiate(prefab, new Vector3(x, -y, 0), Quaternion.identity);
-
-                    newBlock.GetComponent<Block>().Init(randomNum, blockSprites[randomNum]);
-                    blockArr[x, y] = newBlock;
+                    Block block = newBlock.GetComponent<Block>();
+                    block.GetComponent<Block>().Init(randomNum, blockSprites[randomNum]);
+                    blockArr[x, y] = block;
                     blockCount++;
                     break;
                 }
@@ -154,10 +168,10 @@ public class Gamemanager : MonoBehaviour
         Block curBlock = blockArr[curX, curY].GetComponent<Block>();
         Block nextBlock = blockArr[nextX, nextY].GetComponent<Block>();
 
-        GameObject curObj = blockArr[curX, curY];
-        GameObject nextObj = blockArr[nextX, nextY];
+        //GameObject curObj = blockArr[curX, curY];
+        //GameObject nextObj = blockArr[nextX, nextY];
 
-        if (curObj != null && nextObj == null)
+        if (curBlock != null && nextBlock == null)
         {
             curBlock.Move(new Vector3(nextX, -nextY, 0));
 
@@ -166,7 +180,7 @@ public class Gamemanager : MonoBehaviour
             isMove = true;
         }
         // 같은 숫자일 때 결합
-        else if (curObj != null && nextObj != null && !nextBlock.isCombine && !curBlock.isCombine && (curBlock.number == nextBlock.number))
+        else if (curBlock != null && nextBlock != null && !nextBlock.isCombine && !curBlock.isCombine && (curBlock.number == nextBlock.number))
         {
             Destroy(blockArr[nextX, nextY]);
 
@@ -180,6 +194,23 @@ public class Gamemanager : MonoBehaviour
             isMove = true;
         }
     }
+
+    public void Move(int curX, int curY)
+    {
+        int count = curX;
+        if (count > 0)
+        {
+            //if(block)
+            //Move(count--, curY);
+        }
+        else
+        {
+
+        }
+
+
+    }
+
 
     public void Restart()
     {
