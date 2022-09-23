@@ -6,24 +6,31 @@ using UnityEngine.UIElements;
 using UnityEngine.SceneManagement;
 using TMPro;
 
+public enum EDir
+{
+    LEFT,
+    RIGHT,
+    DOWN,
+    UP,
+}
+
 public class Gamemanager : MonoBehaviour
 {
     public static Gamemanager instance;
     public TextMeshProUGUI text;
 
     public Block[,] blockArr;
+    public EDir dir;
 
     public Sprite[] blockSprites;
 
     public GameObject prefab;
     public RectTransform rectTransform;
+    public GameObject gameOverUI;
 
-    private float width = 4;
-    private float height = 4;
-
-    private int blockCount = 0;
+    public int blockCount = 0;
     public int score = 0;
-    public int arrNum = 4;
+    public int arrSize = 4;
 
     private bool isMove = false;
     private void Awake()
@@ -40,21 +47,27 @@ public class Gamemanager : MonoBehaviour
 
     void Start()
     {
-        blockArr = new Block[arrNum, arrNum];  // 4x4 배열
+        blockArr = new Block[arrSize, arrSize];  // 4x4 배열
 
-        for (int i = 0; i < arrNum; i++)
+        for (int i = 0; i < arrSize; i++)
         {
-            for (int j = 0; j < arrNum; j++)
+            for (int j = 0; j < arrSize; j++)
             {
                 GameObject block = Instantiate(prefab);
                 blockArr[i, j] = block.GetComponent<Block>();
+                blockArr[i, j].SetBlock(0, 0, blockSprites[0]);
+                blockArr[i, j].transform.position = new Vector3(i, -j, 0);
             }
         }
 
-
         Camera cam = Camera.main;
-        cam.transform.position = new Vector3((arrNum / 2f) - 0.5f, (-arrNum / 2f) + 0.5f, -10f);
-        BlockSpawn();
+        cam.transform.position = new Vector3((arrSize / 2f) - 0.5f, (-arrSize / 2f) + 0.5f, -10f);
+
+        int x = Random.Range(0, arrSize);
+        int y = Random.Range(0, arrSize);
+        blockArr[x, y].Init(1, blockSprites[1]);
+        blockCount++;
+
         BlockSpawn();
     }
 
@@ -62,75 +75,48 @@ public class Gamemanager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Space))
-        {
-            for (int i = 0; i < arrNum; i++)
-            {
-                for (int j = 0; j < arrNum; j++)
-                {
-                    Debug.Log(blockArr[i, j].score);
-                }
-            }
-        }
-
-
         //Test Code
+
         if (Input.GetKeyDown(KeyCode.RightArrow))
         {
-            for (int y = 0; y < arrNum; y++)
+            for (int y = 0; y < arrSize; y++)
             {
-                for (int x = arrNum - 2; x >= 0; x--)
+                for (int x = arrSize - 2; x >= 0; x--)
                 {
-                    for (int i = 1; i <= 1 + x; i++)
-                    {
-                        //MoveR(3 - i, y);
-                        Move(arrNum - 1 - i, y, arrNum - 1 - i + 1, y);
-                    }
-
+                    Move(x, y, 1, 0, EDir.RIGHT);
                 }
             }
         }
 
         if (Input.GetKeyDown(KeyCode.LeftArrow))
         {
-            for (int y = 0; y <= arrNum - 1; y++)
+            for (int y = 0; y < arrSize; y++)
             {
-                for (int x = 1; x <= arrNum - 1; x++)
+                for (int x = 1; x < arrSize; x++)
                 {
-                    for (int i = 1; i <= arrNum - x; i++)
-                    {
-                        //MoveL(i, y);
-                        Move(i, y, i - 1, y);
-                    }
+                    Move(x, y, -1, 0, EDir.LEFT);
                 }
             }
         }
 
         if (Input.GetKeyDown(KeyCode.UpArrow))
         {
-            for (int x = 0; x <= arrNum - 1; x++)
+            for (int x = 0; x < arrSize; x++)
             {
-                for (int y = 1; y <= arrNum - 1; y++)
+                for (int y = 1; y < arrSize; y++)
                 {
-                    for (int i = 1; i <= arrNum - y; i++)
-                    {
-                        Move(x, i, x, i - 1);
-                    }
+                    Move(x, y, 0, -1, EDir.UP);
                 }
             }
         }
 
         if (Input.GetKeyDown(KeyCode.DownArrow))
         {
-            Debug.Log("test");
-            for (int x = 0; x <= arrNum - 1; x++)
+            for (int x = 0; x <= arrSize - 1; x++)
             {
-                for (int y = arrNum - 2; y >= 0; y--)
+                for (int y = arrSize - 2; y >= 0; y--)
                 {
-                    for (int i = 1; i <= 1 + y; i++)
-                    {
-                        Move(x, arrNum - 1 - i, x, arrNum - 1 - i + 1);
-                    }
+                    Move(x, y, 0, 1, EDir.DOWN);
                 }
             }
         }
@@ -139,36 +125,41 @@ public class Gamemanager : MonoBehaviour
         {
             BlockSpawn();
             isMove = false;
+
+            if (blockCount >= arrSize * arrSize)
+            {
+                if (IsDead())
+                {
+                    GameOver();
+                }
+                //Defeat
+            }
         }
 
-        //Test Code
-        if (Input.GetKeyDown(KeyCode.R))
-        {
-            Restart();
-        }
-
-        text.text = "Score : " + score;
+        text.text = score.ToString();
     }
 
     public void BlockSpawn()
     {
-        if (blockCount <= 15)
+        if (blockCount < (arrSize * arrSize))
         {
             while (true)
             {
-                int x = Random.Range(0, arrNum);
-                int y = Random.Range(0, arrNum);
+                int x = Random.Range(0, arrSize);
+                int y = Random.Range(0, arrSize);
                 if (blockArr[x, y].score == 0)
                 {
-                    int randomNum = Random.Range(0, 2);
+                    int randomNum = Random.Range(1, 11);
 
-                    //GameObject newBlock = Instantiate(prefab, new Vector3(x, -y, 0), Quaternion.identity);
-                    //Block block = newBlock.GetComponent<Block>();
-                    //block.GetComponent<Block>().Init(randomNum, blockSprites[randomNum]);
-                    //blockArr[x, y] = block;
-
-                    blockArr[x, y].Init(randomNum, blockSprites[randomNum]);
-                    blockArr[x, y].Move(new Vector3(x, -y, 0));
+                    //70% 확률로 2가 나옴
+                    if (randomNum >= 4)
+                    {
+                        blockArr[x, y].Init(1, blockSprites[1]);
+                    }
+                    else
+                    {
+                        blockArr[x, y].Init(2, blockSprites[2]);
+                    }
 
                     blockCount++;
                     break;
@@ -177,66 +168,104 @@ public class Gamemanager : MonoBehaviour
         }
     }
 
-    public void Move(int curX, int curY, int nextX, int nextY)  //x,y는 현재 위치, nextX, nextY는 다음 위치
+    public void Move(int curX, int curY, int nextX, int nextY, EDir dir) //재귀
     {
         Block curBlock = blockArr[curX, curY];
-        Block nextBlock = blockArr[nextX, nextY];
+        Block nextBlock = blockArr[curX + nextX, curY + nextY];
 
-        //GameObject curObj = blockArr[curX, curY];
-        //GameObject nextObj = blockArr[nextX, nextY];
-
+        // 이동
         if (curBlock.score != 0 && nextBlock.score == 0)
         {
-            curBlock.Move(new Vector3(nextX, -nextY, 0));
-
-            blockArr[nextX, nextY] = blockArr[curX, curY];
-            blockArr[nextX, nextY].Init(curBlock.number, blockSprites[curBlock.number]);
-            blockArr[nextX, nextY].Move(new Vector3(nextX, -nextY, 0));
-            blockArr[curX, curY].score = 0;
+            nextBlock.SetBlock(curBlock.score, curBlock.spriteNumber, curBlock.spriteRenderer.sprite);
+            curBlock.SetNode();
             isMove = true;
+
+            switch (dir)
+            {
+                case EDir.LEFT:
+                    if (curX != 1)
+                    {
+                        Move(curX + nextX, curY, nextX, nextY, dir);
+                    }
+                    break;
+                case EDir.RIGHT:
+                    if (curX != arrSize - 2)
+                    {
+                        Move(curX + nextX, curY, nextX, nextY, dir);
+                    }
+                    break;
+                case EDir.DOWN:
+                    if (curY != arrSize - 2)
+                    {
+                        Move(curX, curY + nextY, nextX, nextY, dir);
+                    }
+                    break;
+                case EDir.UP:
+                    if (curY != 1)
+                    {
+                        Move(curX, curY + nextY, nextX, nextY, dir);
+                    }
+                    break;
+                default:
+                    break;
+            }
         }
-        // 같은 숫자일 때 결합
-        else if (curBlock.score != 0 && nextBlock.score != 0 && !nextBlock.isCombine && !curBlock.isCombine && (curBlock.number == nextBlock.number))
+        // 결합
+        else if (curBlock.score != 0 && curBlock.score == nextBlock.score && !nextBlock.isCombine)
         {
-            //Destroy(blockArr[nextX, nextY].gameObject);
-
-            curBlock.Move(new Vector3(nextX, -nextY, 0));
-            curBlock.Combine(blockSprites[curBlock.number + 1]);
-
-            blockArr[nextX, nextY] = blockArr[curX, curY];
-            blockArr[curX, curY].score = 0;
-
+            nextBlock.SetBlock(nextBlock.score * 2, nextBlock.spriteNumber + 1, blockSprites[nextBlock.spriteNumber + 1]);
+            nextBlock.Combine();
+            score += nextBlock.score;
+            curBlock.SetNode();
             blockCount--;
             isMove = true;
         }
     }
-
-    public void ReMove(int curX, int curY, int nextX, int nextY)
-    {
-        int count = arrNum;
-        if (count > 0)
-        {
-            count--;
-            if (blockArr[,])
-            //if(block)
-            //Move(count--, curY);
-        }
-        else
-        {
-
-        }
-
-
-    }
-
 
     public void Restart()
     {
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 
-    public void Defeat()
+    public bool IsDead()
     {
+        bool dead = true;
 
+        // 가로 검사
+        for (int y = 0; y < arrSize; y++)
+        {
+            for (int x = 0; x < arrSize - 1; x++)
+            {
+                if (blockArr[x, y].score == blockArr[x + 1, y].score)
+                {
+                    dead = false;
+                }
+            }
+        }
+
+        // 세로 검사
+        for (int x = 0; x < arrSize; x++)
+        {
+            for (int y = 0; y < arrSize - 1; y++)
+            {
+                if (blockArr[x, y].score == blockArr[x, y + 1].score)
+                {
+                    dead = false;
+                }
+            }
+        }
+
+        return dead;
     }
+
+    public void GameOver()
+    {
+        gameOverUI.SetActive(true);
+    }
+
+    public void Continue()
+    {
+        gameOverUI.SetActive(false);
+    }
+
 }

@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine.Events;
 using UnityEngine;
 
 public class Block : MonoBehaviour
@@ -7,10 +8,7 @@ public class Block : MonoBehaviour
     public Animator animator;
     public SpriteRenderer spriteRenderer;
 
-    public float width = 1.4f;
-    public float height = 1.4f;
-
-    public int number;
+    public int spriteNumber;
     public int score;
     public bool isCombine = false;
 
@@ -23,6 +21,12 @@ public class Block : MonoBehaviour
         animator = GetComponent<Animator>();
         animator.SetTrigger("Spawn");
         score = 0;
+        spriteNumber = 0;
+    }
+
+    private void Start()
+    {
+        
     }
 
     private void Update()
@@ -35,8 +39,6 @@ public class Block : MonoBehaviour
                 isMoving = false;
             }
         }
-
-        
     }
 
     private void LateUpdate()
@@ -47,10 +49,10 @@ public class Block : MonoBehaviour
     public void Init(int number, Sprite sprite)
     {
         score = 2;
-        this.number = number;
+        this.spriteNumber = number;
         spriteRenderer.sprite = sprite;
 
-        for(int i = 0; i < number; i++ )
+        for(int i = 1; i < number; i++ )
         {
             score *= 2;
         }
@@ -62,24 +64,25 @@ public class Block : MonoBehaviour
         nextPos = pos;
     }
 
-    public void Combine(Sprite sprite)
+    public void Combine()
     {
-
-        Gamemanager.instance.score += score * 2;
-        
-        this.number++;
-        score *= 2;
-        spriteRenderer.sprite = sprite;
-
         animator.SetTrigger("Combine");
-
         isCombine = true;
     }
 
-    public void SetZero()
+
+    public void SetNode()
     {
         score = 0;
-        spriteRenderer.sprite = null;
+        spriteNumber = 0;
+        spriteRenderer.sprite = Gamemanager.instance.blockSprites[0];
+    }
+
+    public void SetBlock(int score, int spriteNumber, Sprite sprite)
+    {
+        this.score = score;
+        this.spriteNumber = spriteNumber;
+        spriteRenderer.sprite = sprite;
     }
 }
 
