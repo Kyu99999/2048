@@ -11,6 +11,7 @@ public class Block : MonoBehaviour
     public int spriteNumber;
     public int score;
     public bool isCombine = false;
+    public float speed = 50f;
 
     public bool isMoving = false;
     public Vector3 nextPos;
@@ -23,17 +24,11 @@ public class Block : MonoBehaviour
         score = 0;
         spriteNumber = 0;
     }
-
-    private void Start()
-    {
-        
-    }
-
     private void Update()
     {
         if(isMoving)
         {
-            transform.position = Vector3.Lerp(transform.position, nextPos, 0.5f);
+            transform.position = Vector3.Lerp(transform.position, nextPos, speed * Time.deltaTime);
             if (transform.position == nextPos)
             {
                 isMoving = false;
@@ -48,6 +43,7 @@ public class Block : MonoBehaviour
 
     public void Init(int number, Sprite sprite)
     {
+        animator.SetTrigger("Spawn");
         score = 2;
         this.spriteNumber = number;
         spriteRenderer.sprite = sprite;
@@ -69,7 +65,6 @@ public class Block : MonoBehaviour
         animator.SetTrigger("Combine");
         isCombine = true;
     }
-
 
     public void SetNode()
     {

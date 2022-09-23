@@ -1177,7 +1177,7 @@ Canvas:
   m_OverridePixelPerfect: 0
   m_SortingBucketNormalizedSize: 0
   m_AdditionalShaderChannelsFlag: 25
-  m_SortingLayerID: 1833381857
+  m_SortingLayerID: -1397408195
   m_SortingOrder: 0
   m_TargetDisplay: 0
 --- !u!1 &1114446404
@@ -1503,12 +1503,13 @@ MonoBehaviour:
   - {fileID: 21300028, guid: d7592e1c76d5ef4478dab71fbfbdd7dc, type: 3}
   - {fileID: 21300030, guid: d7592e1c76d5ef4478dab71fbfbdd7dc, type: 3}
   - {fileID: 21300032, guid: d7592e1c76d5ef4478dab71fbfbdd7dc, type: 3}
-  prefab: {fileID: 3286381355155209114, guid: eaecc5d600319d64290b528c4a281508, type: 3}
+  blockPrefab: {fileID: 3286381355155209114, guid: eaecc5d600319d64290b528c4a281508, type: 3}
+  nodePrefab: {fileID: 1200249521813357233, guid: 397ae011e10b0bd44b9c6a638a88c371, type: 3}
   rectTransform: {fileID: 1425959358}
   gameOverUI: {fileID: 1212030816}
   blockCount: 0
   score: 0
-  arrSize: 3
+  arrSize: 4
 --- !u!4 &1442886503
 Transform:
   m_ObjectHideFlags: 0

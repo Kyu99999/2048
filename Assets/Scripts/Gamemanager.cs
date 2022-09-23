@@ -24,7 +24,9 @@ public class Gamemanager : MonoBehaviour
 
     public Sprite[] blockSprites;
 
-    public GameObject prefab;
+    public GameObject blockPrefab;
+    public GameObject nodePrefab;
+
     public RectTransform rectTransform;
     public GameObject gameOverUI;
 
@@ -53,7 +55,9 @@ public class Gamemanager : MonoBehaviour
         {
             for (int j = 0; j < arrSize; j++)
             {
-                GameObject block = Instantiate(prefab);
+                Instantiate(nodePrefab, new Vector3(i, -j, 0), Quaternion.identity);
+
+                GameObject block = Instantiate(blockPrefab);
                 blockArr[i, j] = block.GetComponent<Block>();
                 blockArr[i, j].SetBlock(0, 0, blockSprites[0]);
                 blockArr[i, j].transform.position = new Vector3(i, -j, 0);
@@ -132,11 +136,10 @@ public class Gamemanager : MonoBehaviour
                 {
                     GameOver();
                 }
-                //Defeat
             }
         }
 
-        text.text = score.ToString();
+       
     }
 
     public void BlockSpawn()
@@ -151,7 +154,7 @@ public class Gamemanager : MonoBehaviour
                 {
                     int randomNum = Random.Range(1, 11);
 
-                    //70% »Æ∑¸∑Œ 2∞° ≥™ø»
+                    //70% »Æ∑¸∑Œ 2
                     if (randomNum >= 4)
                     {
                         blockArr[x, y].Init(1, blockSprites[1]);
@@ -176,8 +179,15 @@ public class Gamemanager : MonoBehaviour
         // ¿Ãµø
         if (curBlock.score != 0 && nextBlock.score == 0)
         {
-            nextBlock.SetBlock(curBlock.score, curBlock.spriteNumber, curBlock.spriteRenderer.sprite);
-            curBlock.SetNode();
+            // Test Code
+            curBlock.Move(new Vector3(curX + nextX, -(curY + nextY), 0));
+            nextBlock.transform.position = new Vector3(curX, -curY, 0);
+            blockArr[curX + nextX, curY + nextY] = curBlock;
+            blockArr[curX, curY] = nextBlock;
+            //
+
+            //nextBlock.SetBlock(curBlock.score, curBlock.spriteNumber, curBlock.spriteRenderer.sprite);
+            //curBlock.SetNode();
             isMove = true;
 
             switch (dir)
@@ -211,11 +221,14 @@ public class Gamemanager : MonoBehaviour
             }
         }
         // ∞·«’
-        else if (curBlock.score != 0 && curBlock.score == nextBlock.score && !nextBlock.isCombine)
+        else if (curBlock.score != 0 && curBlock.score == nextBlock.score && !curBlock.isCombine && !nextBlock.isCombine)
         {
             nextBlock.SetBlock(nextBlock.score * 2, nextBlock.spriteNumber + 1, blockSprites[nextBlock.spriteNumber + 1]);
             nextBlock.Combine();
+
             score += nextBlock.score;
+            text.text = score.ToString();
+
             curBlock.SetNode();
             blockCount--;
             isMove = true;
