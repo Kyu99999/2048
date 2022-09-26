@@ -24,6 +24,7 @@ public class Block : MonoBehaviour
         score = 0;
         spriteNumber = 0;
     }
+
     private void Update()
     {
         if(isMoving)
@@ -71,6 +72,16 @@ public class Block : MonoBehaviour
         score = 0;
         spriteNumber = 0;
         spriteRenderer.sprite = Gamemanager.instance.blockSprites[0];
+        isMoving = false;
+    }
+
+    public void SetNode(Vector3 pos)
+    {
+        transform.position = pos;
+        score = 0;
+        spriteNumber = 0;
+        spriteRenderer.sprite = Gamemanager.instance.blockSprites[0];
+        isMoving = false;
     }
 
     public void SetBlock(int score, int spriteNumber, Sprite sprite)
@@ -78,6 +89,12 @@ public class Block : MonoBehaviour
         this.score = score;
         this.spriteNumber = spriteNumber;
         spriteRenderer.sprite = sprite;
+        Gamemanager.instance.SetScore(score);
+
+        if(score == 2048)
+        {
+            Gamemanager.instance.Clear();
+        }
     }
 }
 
