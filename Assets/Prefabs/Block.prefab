@@ -105,6 +105,7 @@ MonoBehaviour:
   score: 2
   isCombine: 0
   speed: 25
+  clearScore: 16
   isMoving: 0
   nextPos: {x: 0, y: 0, z: 0}
 --- !u!95 &-7400783069800141356

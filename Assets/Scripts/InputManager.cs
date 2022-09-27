@@ -5,7 +5,7 @@ using UnityEngine;
 public class InputManager : MonoBehaviour
 {
     public static InputManager instance;
-    public State state;
+    public EState state { get; set; }
     private void Awake()
     {
         if(instance == null)
@@ -23,7 +23,7 @@ public class InputManager : MonoBehaviour
 
         switch (state)
         {
-            case State.PLAYING:
+            case EState.PLAYING:
                 if (Input.GetMouseButtonDown(1))
                 {
                     DeleteBlock();
@@ -34,9 +34,9 @@ public class InputManager : MonoBehaviour
                     SetObstacle();
                 }
                 break;
-            case State.PAUSE:
+            case EState.PAUSE:
                 break;
-            case State.GAMEOVER:
+            case EState.GAMEOVER:
                 if (Input.GetMouseButtonDown(1))
                 {
                     DeleteBlock();

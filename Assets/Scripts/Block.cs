@@ -5,16 +5,16 @@ using UnityEngine;
 
 public class Block : MonoBehaviour
 {
-    public Animator animator;
-    public SpriteRenderer spriteRenderer;
+    private Animator animator;
+    private SpriteRenderer spriteRenderer;
 
-    public int spriteNumber;
-    public int score;
-    public bool isCombine = false;
+    public int spriteNumber { get; set; }
+    public int score { get; set; }
+    public bool isCombine { get; set; } = false;
     public float speed = 50f;
 
-    public bool isMoving = false;
-    public Vector3 nextPos;
+    public bool isMoving { get; set; } = false;
+    public Vector3 nextPos { get; set; }
 
     private void Awake()
     {
@@ -90,12 +90,5 @@ public class Block : MonoBehaviour
         this.spriteNumber = spriteNumber;
         spriteRenderer.sprite = sprite;
         Gamemanager.instance.SetScore(score);
-
-        if(score == 2048)
-        {
-            Gamemanager.instance.Clear();
-        }
     }
 }
-
-

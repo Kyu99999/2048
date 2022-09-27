@@ -14,7 +14,7 @@ public enum EDir
     UP,
 }
 
-public enum State
+public enum EState
 {
     PLAYING,
     PAUSE,
@@ -25,9 +25,8 @@ public enum State
 public class Gamemanager : MonoBehaviour
 {
     public static Gamemanager instance;
-    public TextMeshProUGUI text;
 
-    public State state;
+    public EState state { get; set; }
 
     public Block[,] blockArr;
     public EDir dir;
@@ -40,17 +39,19 @@ public class Gamemanager : MonoBehaviour
     public GameObject nodePrefab;
     public GameObject obstaclePrefab;
 
-    public RectTransform rectTransform;
     public GameObject gameOverUI;
     public GameObject clearUI;
 
-    public int blockCount = 0;
-    public int score = 0;
+    public TextMeshProUGUI text;
+    public TextMeshProUGUI bestScoreText;
+
+    public int blockCount { get; set; } = 0;
+    private int score = 0;
     public int arrSize = 4;
+    private int bestScore = 0;
+    public int clearScore = 0;
 
     private bool isMove = false;
-
-    private float size;
     
     private void Awake()
     {
@@ -66,17 +67,14 @@ public class Gamemanager : MonoBehaviour
 
     void Start()
     {
-        size = 1;
-
         Init();
-        state = State.PLAYING;
     }
 
     void Update()
     {
         switch (state)
         {
-            case State.PLAYING:
+            case EState.PLAYING:
                 if (Input.GetKeyDown(KeyCode.RightArrow))
                 {
                     for (int y = 0; y < arrSize; y++)
@@ -135,9 +133,9 @@ public class Gamemanager : MonoBehaviour
                     }
                 }
                 break;
-            case State.PAUSE:
+            case EState.PAUSE:
                 break;
-            case State.GAMEOVER:
+            case EState.GAMEOVER:
                 break;
             default:
                 break;
@@ -183,8 +181,8 @@ public class Gamemanager : MonoBehaviour
         // 이동
         if (curBlock.score != 0 && nextBlock.score == 0 && !obstacle)
         {
-            curBlock.Move(new Vector3((curX + nextX) * size, -(curY + nextY) * size, 0));
-            nextBlock.transform.position = new Vector3(curX * size, -curY * size, 0);
+            curBlock.Move(new Vector3((curX + nextX), -(curY + nextY), 0));
+            nextBlock.transform.position = new Vector3(curX, -curY, 0);
             blockArr[curX + nextX, curY + nextY] = curBlock;
             blockArr[curX, curY] = nextBlock;
            
@@ -225,7 +223,11 @@ public class Gamemanager : MonoBehaviour
         {
             nextBlock.SetBlock(nextBlock.score * 2, nextBlock.spriteNumber + 1, blockSprites[nextBlock.spriteNumber + 1]);
             nextBlock.Combine();
-            curBlock.SetNode(new Vector3(curX * size, -curY * size, 0));
+            curBlock.SetNode(new Vector3(curX, -curY, 0));
+            if (score == clearScore)
+            {
+                Clear();
+            }
             blockCount--;
             isMove = true;
         }
@@ -233,6 +235,7 @@ public class Gamemanager : MonoBehaviour
 
     public void Restart()
     {
+        PlayerPrefs.Save();
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 
@@ -269,40 +272,44 @@ public class Gamemanager : MonoBehaviour
 
     public void Init()
     {
+        bestScore = PlayerPrefs.GetInt("BestScore");
+        bestScoreText.text = bestScore.ToString();
+
         blockArr = new Block[arrSize, arrSize];  // 4x4 배열
         verOvstacleArr = new Obstacle[arrSize - 1, arrSize];
         horObstacleArr = new Obstacle[arrSize, arrSize - 1];
 
+        // 노드 및 블럭
         for (int i = 0; i < arrSize; i++)
         {
             for (int j = 0; j < arrSize; j++)
             {
-                Instantiate(nodePrefab, new Vector3(i * size, -j * size, 0), Quaternion.identity);
+                Instantiate(nodePrefab, new Vector3(i, -j, 0), Quaternion.identity);
 
                 GameObject block = Instantiate(blockPrefab);
 
                 blockArr[i, j] = block.GetComponent<Block>();
                 blockArr[i, j].SetBlock(0, 0, blockSprites[0]);
-                blockArr[i, j].transform.position = new Vector3(i * size, -j * size, 0);
+                blockArr[i, j].transform.position = new Vector3(i, -j, 0);
             }
         }
 
+        // 장애물
         for (int i = 0; i < arrSize - 1; i++)
         {
             for (int j = 0; j < arrSize; j++)
             {
-                GameObject obs = Instantiate(obstaclePrefab, new Vector3(i * size + size / 2f, -j * size, 0), Quaternion.identity);
+                GameObject obs = Instantiate(obstaclePrefab, new Vector3(i + 1 / 2f, -j, 0), Quaternion.identity);
                 verOvstacleArr[i, j] = obs.GetComponent<Obstacle>();
                 verOvstacleArr[i, j].SetBlock(BLOCKTYPE.VERTICAL);
                 verOvstacleArr[i, j].SetActive(false);
             }
         }
-
         for (int i = 0; i < arrSize; i++)
         {
             for (int j = 0; j < arrSize - 1; j++)
             {
-                GameObject obs = Instantiate(obstaclePrefab, new Vector3(i * size, -j * size + size / 2f, 0), Quaternion.identity);
+                GameObject obs = Instantiate(obstaclePrefab, new Vector3(i , -j - 1 / 2f, 0), Quaternion.identity);
                 horObstacleArr[i, j] = obs.GetComponent<Obstacle>();
                 horObstacleArr[i, j].SetBlock(BLOCKTYPE.HORIZONTAL);
                 horObstacleArr[i, j].SetActive(false);
@@ -319,21 +326,23 @@ public class Gamemanager : MonoBehaviour
         blockCount++;
 
         BlockSpawn();
+
+        state = EState.PLAYING;
     }
 
     public void GameOver()
     {
-        SetState(State.GAMEOVER);
+        SetState(EState.GAMEOVER);
         gameOverUI.SetActive(true);
     }
 
     public void Clear()
     {
-        SetState(State.PAUSE);
+        SetState(EState.PAUSE);
         clearUI.SetActive(true);
     }
 
-    public void SetState(State state)
+    public void SetState(EState state)
     {
         this.state = state;
     }
@@ -341,12 +350,18 @@ public class Gamemanager : MonoBehaviour
     public void SetScore(int score)
     {
         this.score += score;
-        text.text = score.ToString();
+        text.text = this.score.ToString();
+        if (this.score >= bestScore)
+        {
+            bestScore = this.score;
+            PlayerPrefs.SetInt("BestScore", bestScore);
+            bestScoreText.text = bestScore.ToString();
+        }
     }
 
     public void Continue()
     {
-        SetState(State.PLAYING);
+        SetState(EState.PLAYING);
         gameOverUI.SetActive(false);
         clearUI.SetActive(false);
     }
