@@ -9,38 +9,38 @@ public class MenuManager : MonoBehaviour
     [SerializeField]
     private TextMeshProUGUI mapSizeText;
 
-    private int mapSize;
+    private int startMapSize;
 
     // Start is called before the first frame update
     void Start()
     {
-        mapSize = 3;
-        mapSizeText.text = mapSize + " X " + mapSize;
+        startMapSize = 3;
+        mapSizeText.text = startMapSize + " X " + startMapSize;
     }
 
 
     public void GameStart()
     {
-        PlayerPrefs.SetInt("MapSize", mapSize);
+        PlayerPrefs.SetInt("MapSize", startMapSize);
         PlayerPrefs.Save();
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
     }
 
     public void Increase()
     {
-        if (mapSize < 10)
+        if (startMapSize < 10)
         {
-            mapSize++;
-            mapSizeText.text = mapSize + " X " + mapSize;
+            startMapSize++;
+            mapSizeText.text = startMapSize + " X " + startMapSize;
         }
     }
 
     public void Decrease()
     {
-        if (mapSize > 3)
+        if (startMapSize > 3)
         {
-            mapSize--;
-            mapSizeText.text = mapSize + " X " + mapSize;
+            startMapSize--;
+            mapSizeText.text = startMapSize + " X " + startMapSize;
         }
     }
 }
