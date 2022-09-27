@@ -29,7 +29,7 @@ public class Gamemanager : MonoBehaviour
 
     private Block[,] blockArr;
     private Obstacle[,] horObstacleArr;
-    private Obstacle[,] verOvstacleArr;
+    private Obstacle[,] verObstacleArr;
    
     [field: SerializeField]
     public Sprite[] BlockSprites { get; private set; }
@@ -135,7 +135,7 @@ public class Gamemanager : MonoBehaviour
 
                     if (BlockCount >= mapSize * mapSize)
                     {
-                        if (IsDead())
+                        if (CheckIsDead())
                         {
                             GameOver();
                         }
@@ -235,7 +235,7 @@ public class Gamemanager : MonoBehaviour
             nextBlock.Combine();
             curBlock.SetNode(new Vector3(curX, -curY, 0));
 
-            curScore += nextBlock.Score;
+            SetScore(nextBlock.Score);
 
             if (curScore == clearScore)
             {
@@ -252,9 +252,9 @@ public class Gamemanager : MonoBehaviour
         SceneManager.LoadScene(0);
     }
 
-    public bool IsDead()
+    public bool CheckIsDead()
     {
-        bool dead = true;
+        bool isDead = true;
 
         // 가로 검사
         for (int y = 0; y < mapSize; y++)
@@ -263,7 +263,7 @@ public class Gamemanager : MonoBehaviour
             {
                 if (blockArr[x, y].Score == blockArr[x + 1, y].Score)
                 {
-                    dead = false;
+                    isDead = false;
                 }
             }
         }
@@ -275,12 +275,12 @@ public class Gamemanager : MonoBehaviour
             {
                 if (blockArr[x, y].Score == blockArr[x, y + 1].Score)
                 {
-                    dead = false;
+                    isDead = false;
                 }
             }
         }
 
-        return dead;
+        return isDead;
     }
 
     public void Init()
@@ -289,7 +289,7 @@ public class Gamemanager : MonoBehaviour
         bestScoreText.text = bestScore.ToString();
 
         blockArr = new Block[mapSize, mapSize];  // 4x4 배열
-        verOvstacleArr = new Obstacle[mapSize - 1, mapSize];
+        verObstacleArr = new Obstacle[mapSize - 1, mapSize];
         horObstacleArr = new Obstacle[mapSize, mapSize - 1];
 
         // 노드 및 블럭 생성
@@ -313,9 +313,9 @@ public class Gamemanager : MonoBehaviour
             for (int j = 0; j < mapSize; j++)
             {
                 GameObject obs = Instantiate(obstaclePrefab, new Vector3(i + 1 / 2f, -j, 0), Quaternion.identity);
-                verOvstacleArr[i, j] = obs.GetComponent<Obstacle>();
-                verOvstacleArr[i, j].SetBlock(BLOCKTYPE.VERTICAL);
-                verOvstacleArr[i, j].SetActive(false);
+                verObstacleArr[i, j] = obs.GetComponent<Obstacle>();
+                verObstacleArr[i, j].SetBlock(BLOCKTYPE.VERTICAL);
+                verObstacleArr[i, j].SetActive(false);
             }
         }
         for (int i = 0; i < mapSize; i++)
@@ -390,13 +390,13 @@ public class Gamemanager : MonoBehaviour
         switch (dir)
         {
             case EDir.LEFT:
-                if (verOvstacleArr[curX - 1, curY].IsAlive)
+                if (verObstacleArr[curX - 1, curY].IsAlive)
                 {
                     obstacle = true;
                 }
                 break;
             case EDir.RIGHT:
-                if (verOvstacleArr[curX, curY].IsAlive)
+                if (verObstacleArr[curX, curY].IsAlive)
                 {
                     obstacle = true;
                 }
