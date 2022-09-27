@@ -11,7 +11,7 @@ public enum BLOCKTYPE
 
 public class Obstacle : MonoBehaviour
 {
-    public bool isAlive = false;
+    public bool IsAlive { get; set; } = false;
     private SpriteRenderer spriteRenderer;
 
     private void Awake()
@@ -36,7 +36,7 @@ public class Obstacle : MonoBehaviour
 
     public void SetActive(bool isAlive)
     {
-        this.isAlive = isAlive;
+        this.IsAlive = isAlive;
         spriteRenderer.enabled = isAlive;
     }
 }

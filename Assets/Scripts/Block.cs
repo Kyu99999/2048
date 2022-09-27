@@ -3,92 +3,94 @@ using System.Collections.Generic;
 using UnityEngine.Events;
 using UnityEngine;
 
+
 public class Block : MonoBehaviour
 {
     private Animator animator;
     private SpriteRenderer spriteRenderer;
 
-    public int spriteNumber { get; set; }
-    public int score { get; set; }
-    public bool isCombine { get; set; } = false;
+    public int SpriteNumber { get; set; }
+    public int Score { get; set; }
+    public bool IsCombine { get; set; } = false;
+
+    [Range(0f,100f)]
     public float speed = 50f;
 
-    public bool isMoving { get; set; } = false;
-    public Vector3 nextPos { get; set; }
+    private bool IsMoving { get; set; } = false;
+    private Vector3 NextPos { get; set; }
 
     private void Awake()
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
         animator = GetComponent<Animator>();
         animator.SetTrigger("Spawn");
-        score = 0;
-        spriteNumber = 0;
+        Score = 0;
+        SpriteNumber = 0;
     }
 
     private void Update()
     {
-        if(isMoving)
+        if(IsMoving)
         {
-            transform.position = Vector3.Lerp(transform.position, nextPos, speed * Time.deltaTime);
-            if (transform.position == nextPos)
+            transform.position = Vector3.Lerp(transform.position, NextPos, speed * Time.deltaTime);
+            if (transform.position == NextPos)
             {
-                isMoving = false;
+                IsMoving = false;
             }
         }
     }
 
     private void LateUpdate()
     {
-        isCombine = false;
+        IsCombine = false;
     }
 
     public void Init(int number, Sprite sprite)
     {
         animator.SetTrigger("Spawn");
-        score = 2;
-        this.spriteNumber = number;
+        Score = 2;
+        this.SpriteNumber = number;
         spriteRenderer.sprite = sprite;
 
         for(int i = 1; i < number; i++ )
         {
-            score *= 2;
+            Score *= 2;
         }
     }
 
     public void Move(Vector3 pos)
     {
-        isMoving = true;
-        nextPos = pos;
+        IsMoving = true;
+        NextPos = pos;
     }
 
     public void Combine()
     {
         animator.SetTrigger("Combine");
-        isCombine = true;
+        IsCombine = true;
     }
 
     public void SetNode()
     {
-        score = 0;
-        spriteNumber = 0;
-        spriteRenderer.sprite = Gamemanager.instance.blockSprites[0];
-        isMoving = false;
+        Score = 0;
+        SpriteNumber = 0;
+        spriteRenderer.sprite = Gamemanager.instance.BlockSprites[0];
+        IsMoving = false;
     }
 
     public void SetNode(Vector3 pos)
     {
         transform.position = pos;
-        score = 0;
-        spriteNumber = 0;
-        spriteRenderer.sprite = Gamemanager.instance.blockSprites[0];
-        isMoving = false;
+        Score = 0;
+        SpriteNumber = 0;
+        spriteRenderer.sprite = Gamemanager.instance.BlockSprites[0];
+        IsMoving = false;
     }
 
     public void SetBlock(int score, int spriteNumber, Sprite sprite)
     {
-        this.score = score;
-        this.spriteNumber = spriteNumber;
+        this.Score = score;
+        this.SpriteNumber = spriteNumber;
         spriteRenderer.sprite = sprite;
-        Gamemanager.instance.SetScore(score);
     }
 }

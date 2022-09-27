@@ -5,7 +5,7 @@ using UnityEngine;
 public class InputManager : MonoBehaviour
 {
     public static InputManager instance;
-    public EState state { get; set; }
+    public EState State { get; private set; }
     private void Awake()
     {
         if(instance == null)
@@ -19,9 +19,9 @@ public class InputManager : MonoBehaviour
     }
     void Update()
     {
-        state = Gamemanager.instance.state;
+        State = Gamemanager.instance.State;
 
-        switch (state)
+        switch (State)
         {
             case EState.PLAYING:
                 if (Input.GetMouseButtonDown(1))
@@ -53,11 +53,11 @@ public class InputManager : MonoBehaviour
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         RaycastHit2D hit = Physics2D.GetRayIntersection(ray, Mathf.Infinity);
 
-        if (hit && hit.collider.tag == "Block")
+        if (hit && hit.collider.CompareTag("Block"))
         {
             Block block = hit.collider.GetComponent<Block>();
             block.SetNode();
-            Gamemanager.instance.blockCount--;
+            Gamemanager.instance.BlockCount--;
         }
     }
 
@@ -66,10 +66,10 @@ public class InputManager : MonoBehaviour
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         RaycastHit2D hit = Physics2D.GetRayIntersection(ray, Mathf.Infinity);
 
-        if(hit && hit.collider.tag == "Obstacle")
+        if(hit && hit.collider.CompareTag("Obstacle"))
         {
             Obstacle obstacle = hit.collider.GetComponent<Obstacle>();
-            obstacle.SetActive(!obstacle.isAlive);
+            obstacle.SetActive(!obstacle.IsAlive);
         }
     }
 }

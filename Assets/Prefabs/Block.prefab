@@ -99,15 +99,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7c2d7e2c863636849af7c4fee4dd148b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  animator: {fileID: 0}
-  spriteRenderer: {fileID: 0}
-  spriteNumber: 0
-  score: 2
-  isCombine: 0
-  speed: 25
-  clearScore: 16
-  isMoving: 0
-  nextPos: {x: 0, y: 0, z: 0}
+  speed: 20
 --- !u!95 &-7400783069800141356
 Animator:
   serializedVersion: 4

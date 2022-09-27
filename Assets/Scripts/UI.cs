@@ -5,6 +5,7 @@ using UnityEngine;
 public class UI : MonoBehaviour
 {
     // Start is called before the first frame update
+    [Tooltip("UI 연출 시간")]
     public float uiTimer = 1f;
     private RectTransform rectTransform;
 
@@ -16,11 +17,10 @@ public class UI : MonoBehaviour
     private void OnEnable()
     {
         rectTransform.localScale = new Vector3(0.3f, 0.3f, 1);
-        StartCoroutine("SetUI");
+        StartCoroutine(BiggerUI());
     }
 
-
-    public IEnumerator SetUI()
+    private IEnumerator BiggerUI()
     {
         while(true)
         {

@@ -21,37 +21,44 @@ public enum EState
     GAMEOVER,
 }
 
-
 public class Gamemanager : MonoBehaviour
 {
     public static Gamemanager instance;
 
-    public EState state { get; set; }
+    public EState State { get; set; }
 
-    public Block[,] blockArr;
-    public EDir dir;
-    public Obstacle[,] horObstacleArr;
-    public Obstacle[,] verOvstacleArr;
+    private Block[,] blockArr;
+    private Obstacle[,] horObstacleArr;
+    private Obstacle[,] verOvstacleArr;
+   
+    [field: SerializeField]
+    public Sprite[] BlockSprites { get; private set; }
 
-    public Sprite[] blockSprites;
+    [SerializeField]
+    private GameObject blockPrefab;
+    [SerializeField]
+    private GameObject nodePrefab;
+    [SerializeField]
+    private GameObject obstaclePrefab;
+    [SerializeField]
+    private GameObject gameOverUI;
+    [SerializeField]
+    private GameObject clearUI;
+    [SerializeField]
+    private TextMeshProUGUI curScoreText;
+    [SerializeField]
+    private TextMeshProUGUI bestScoreText;
 
-    public GameObject blockPrefab;
-    public GameObject nodePrefab;
-    public GameObject obstaclePrefab;
-
-    public GameObject gameOverUI;
-    public GameObject clearUI;
-
-    public TextMeshProUGUI text;
-    public TextMeshProUGUI bestScoreText;
-
-    public int blockCount { get; set; } = 0;
-    private int score = 0;
-    public int arrSize = 4;
+    public int BlockCount { get; set; } = 0;
+    private int curScore = 0;
     private int bestScore = 0;
-    public int clearScore = 0;
 
-    private bool isMove = false;
+    private int mapSize = 4;
+
+    [Tooltip("CLEAR 조건")]
+    public int clearScore = 2048;
+
+    private bool isBlockMove = false;
     
     private void Awake()
     {
@@ -63,6 +70,8 @@ public class Gamemanager : MonoBehaviour
         {
             Destroy(this.gameObject);
         }
+
+        mapSize = PlayerPrefs.GetInt("MapSize");
     }
 
     void Start()
@@ -72,59 +81,59 @@ public class Gamemanager : MonoBehaviour
 
     void Update()
     {
-        switch (state)
+        switch (State)
         {
             case EState.PLAYING:
                 if (Input.GetKeyDown(KeyCode.RightArrow))
                 {
-                    for (int y = 0; y < arrSize; y++)
+                    for (int y = 0; y < mapSize; y++)
                     {
-                        for (int x = arrSize - 2; x >= 0; x--)
+                        for (int x = mapSize - 2; x >= 0; x--)
                         {
-                            Move(x, y, 1, 0, EDir.RIGHT);
+                            MoveOrCombine(x, y, 1, 0, EDir.RIGHT);
                         }
                     }
                 }
 
                 if (Input.GetKeyDown(KeyCode.LeftArrow))
                 {
-                    for (int y = 0; y < arrSize; y++)
+                    for (int y = 0; y < mapSize; y++)
                     {
-                        for (int x = 1; x < arrSize; x++)
+                        for (int x = 1; x < mapSize; x++)
                         {
-                            Move(x, y, -1, 0, EDir.LEFT);
+                            MoveOrCombine(x, y, -1, 0, EDir.LEFT);
                         }
                     }
                 }
 
                 if (Input.GetKeyDown(KeyCode.UpArrow))
                 {
-                    for (int x = 0; x < arrSize; x++)
+                    for (int x = 0; x < mapSize; x++)
                     {
-                        for (int y = 1; y < arrSize; y++)
+                        for (int y = 1; y < mapSize; y++)
                         {
-                            Move(x, y, 0, -1, EDir.UP);
+                            MoveOrCombine(x, y, 0, -1, EDir.UP);
                         }
                     }
                 }
 
                 if (Input.GetKeyDown(KeyCode.DownArrow))
                 {
-                    for (int x = 0; x <= arrSize - 1; x++)
+                    for (int x = 0; x <= mapSize - 1; x++)
                     {
-                        for (int y = arrSize - 2; y >= 0; y--)
+                        for (int y = mapSize - 2; y >= 0; y--)
                         {
-                            Move(x, y, 0, 1, EDir.DOWN);
+                            MoveOrCombine(x, y, 0, 1, EDir.DOWN);
                         }
                     }
                 }
 
-                if (isMove)
+                if (isBlockMove)
                 {
                     BlockSpawn();
-                    isMove = false;
+                    isBlockMove = false;
 
-                    if (blockCount >= arrSize * arrSize)
+                    if (BlockCount >= mapSize * mapSize)
                     {
                         if (IsDead())
                         {
@@ -132,6 +141,7 @@ public class Gamemanager : MonoBehaviour
                         }
                     }
                 }
+
                 break;
             case EState.PAUSE:
                 break;
@@ -144,34 +154,34 @@ public class Gamemanager : MonoBehaviour
 
     public void BlockSpawn()
     {
-        if (blockCount < (arrSize * arrSize))
+        if (BlockCount < (mapSize * mapSize))
         {
             while (true)
             {
-                int x = Random.Range(0, arrSize);
-                int y = Random.Range(0, arrSize);
-                if (blockArr[x, y].score == 0)
+                int x = Random.Range(0, mapSize);
+                int y = Random.Range(0, mapSize);
+                if (blockArr[x, y].Score == 0)
                 {
                     int randomNum = Random.Range(1, 11);
 
                     //70% 확률로 2
                     if (randomNum >= 4)
                     {
-                        blockArr[x, y].Init(1, blockSprites[1]);
+                        blockArr[x, y].Init(1, BlockSprites[1]);
                     }
                     else
                     {
-                        blockArr[x, y].Init(2, blockSprites[2]);
+                        blockArr[x, y].Init(2, BlockSprites[2]);
                     }
 
-                    blockCount++;
+                    BlockCount++;
                     break;
                 }
             }
         }
     }
 
-    public void Move(int curX, int curY, int nextX, int nextY, EDir dir) //재귀
+    public void MoveOrCombine(int curX, int curY, int nextX, int nextY, EDir dir) //재귀
     {
         Block curBlock = blockArr[curX, curY];
         Block nextBlock = blockArr[curX + nextX, curY + nextY];
@@ -179,39 +189,39 @@ public class Gamemanager : MonoBehaviour
         bool obstacle = CheckObstacle(curX, curY, dir);
 
         // 이동
-        if (curBlock.score != 0 && nextBlock.score == 0 && !obstacle)
+        if (curBlock.Score != 0 && nextBlock.Score == 0 && !obstacle)
         {
             curBlock.Move(new Vector3((curX + nextX), -(curY + nextY), 0));
             nextBlock.transform.position = new Vector3(curX, -curY, 0);
             blockArr[curX + nextX, curY + nextY] = curBlock;
             blockArr[curX, curY] = nextBlock;
            
-            isMove = true;
+            isBlockMove = true;
 
             switch (dir)
             {
                 case EDir.LEFT:
                     if (curX != 1)
                     {
-                        Move(curX + nextX, curY, nextX, nextY, dir);
+                        MoveOrCombine(curX + nextX, curY, nextX, nextY, dir);
                     }
                     break;
                 case EDir.RIGHT:
-                    if (curX != arrSize - 2)
+                    if (curX != mapSize - 2)
                     {
-                        Move(curX + nextX, curY, nextX, nextY, dir);
+                        MoveOrCombine(curX + nextX, curY, nextX, nextY, dir);
                     }
                     break;
                 case EDir.DOWN:
-                    if (curY != arrSize - 2)
+                    if (curY != mapSize - 2)
                     {
-                        Move(curX, curY + nextY, nextX, nextY, dir);
+                        MoveOrCombine(curX, curY + nextY, nextX, nextY, dir);
                     }
                     break;
                 case EDir.UP:
                     if (curY != 1)
                     {
-                        Move(curX, curY + nextY, nextX, nextY, dir);
+                        MoveOrCombine(curX, curY + nextY, nextX, nextY, dir);
                     }
                     break;
                 default:
@@ -219,24 +229,27 @@ public class Gamemanager : MonoBehaviour
             }
         }
         // 결합
-        else if (curBlock.score != 0 && curBlock.score == nextBlock.score && !curBlock.isCombine && !nextBlock.isCombine && !obstacle)
+        else if (curBlock.Score != 0 && curBlock.Score == nextBlock.Score && !curBlock.IsCombine && !nextBlock.IsCombine && !obstacle)
         {
-            nextBlock.SetBlock(nextBlock.score * 2, nextBlock.spriteNumber + 1, blockSprites[nextBlock.spriteNumber + 1]);
+            nextBlock.SetBlock(nextBlock.Score * 2, nextBlock.SpriteNumber + 1, BlockSprites[nextBlock.SpriteNumber + 1]);
             nextBlock.Combine();
             curBlock.SetNode(new Vector3(curX, -curY, 0));
-            if (score == clearScore)
+
+            curScore += nextBlock.Score;
+
+            if (curScore == clearScore)
             {
                 Clear();
             }
-            blockCount--;
-            isMove = true;
+            BlockCount--;
+            isBlockMove = true;
         }
     }
 
     public void Restart()
     {
         PlayerPrefs.Save();
-        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+        SceneManager.LoadScene(0);
     }
 
     public bool IsDead()
@@ -244,11 +257,11 @@ public class Gamemanager : MonoBehaviour
         bool dead = true;
 
         // 가로 검사
-        for (int y = 0; y < arrSize; y++)
+        for (int y = 0; y < mapSize; y++)
         {
-            for (int x = 0; x < arrSize - 1; x++)
+            for (int x = 0; x < mapSize - 1; x++)
             {
-                if (blockArr[x, y].score == blockArr[x + 1, y].score)
+                if (blockArr[x, y].Score == blockArr[x + 1, y].Score)
                 {
                     dead = false;
                 }
@@ -256,11 +269,11 @@ public class Gamemanager : MonoBehaviour
         }
 
         // 세로 검사
-        for (int x = 0; x < arrSize; x++)
+        for (int x = 0; x < mapSize; x++)
         {
-            for (int y = 0; y < arrSize - 1; y++)
+            for (int y = 0; y < mapSize - 1; y++)
             {
-                if (blockArr[x, y].score == blockArr[x, y + 1].score)
+                if (blockArr[x, y].Score == blockArr[x, y + 1].Score)
                 {
                     dead = false;
                 }
@@ -272,32 +285,32 @@ public class Gamemanager : MonoBehaviour
 
     public void Init()
     {
-        bestScore = PlayerPrefs.GetInt("BestScore");
+        bestScore = PlayerPrefs.GetInt("BestScore" + mapSize.ToString());
         bestScoreText.text = bestScore.ToString();
 
-        blockArr = new Block[arrSize, arrSize];  // 4x4 배열
-        verOvstacleArr = new Obstacle[arrSize - 1, arrSize];
-        horObstacleArr = new Obstacle[arrSize, arrSize - 1];
+        blockArr = new Block[mapSize, mapSize];  // 4x4 배열
+        verOvstacleArr = new Obstacle[mapSize - 1, mapSize];
+        horObstacleArr = new Obstacle[mapSize, mapSize - 1];
 
-        // 노드 및 블럭
-        for (int i = 0; i < arrSize; i++)
+        // 노드 및 블럭 생성
+        for (int i = 0; i < mapSize; i++)
         {
-            for (int j = 0; j < arrSize; j++)
+            for (int j = 0; j < mapSize; j++)
             {
                 Instantiate(nodePrefab, new Vector3(i, -j, 0), Quaternion.identity);
 
                 GameObject block = Instantiate(blockPrefab);
 
                 blockArr[i, j] = block.GetComponent<Block>();
-                blockArr[i, j].SetBlock(0, 0, blockSprites[0]);
+                blockArr[i, j].SetBlock(0, 0, BlockSprites[0]);
                 blockArr[i, j].transform.position = new Vector3(i, -j, 0);
             }
         }
 
-        // 장애물
-        for (int i = 0; i < arrSize - 1; i++)
+        // 장애물 생성
+        for (int i = 0; i < mapSize - 1; i++)
         {
-            for (int j = 0; j < arrSize; j++)
+            for (int j = 0; j < mapSize; j++)
             {
                 GameObject obs = Instantiate(obstaclePrefab, new Vector3(i + 1 / 2f, -j, 0), Quaternion.identity);
                 verOvstacleArr[i, j] = obs.GetComponent<Obstacle>();
@@ -305,9 +318,9 @@ public class Gamemanager : MonoBehaviour
                 verOvstacleArr[i, j].SetActive(false);
             }
         }
-        for (int i = 0; i < arrSize; i++)
+        for (int i = 0; i < mapSize; i++)
         {
-            for (int j = 0; j < arrSize - 1; j++)
+            for (int j = 0; j < mapSize - 1; j++)
             {
                 GameObject obs = Instantiate(obstaclePrefab, new Vector3(i , -j - 1 / 2f, 0), Quaternion.identity);
                 horObstacleArr[i, j] = obs.GetComponent<Obstacle>();
@@ -316,18 +329,21 @@ public class Gamemanager : MonoBehaviour
             }
         }
 
+        // 카메라 이동
         Camera cam = Camera.main;
-        cam.transform.position = new Vector3((arrSize / 2f) - 0.5f, (-arrSize / 2f) + 0.5f, -10f);
-        cam.orthographicSize = 0.4f + 0.8f * (float)arrSize;
+        cam.transform.position = new Vector3((mapSize / 2f) - 0.5f, (-mapSize / 2f) + 0.5f, -10f);
+        cam.orthographicSize = 0.4f + 0.8f * (float)mapSize;
 
-        int x = Random.Range(0, arrSize);
-        int y = Random.Range(0, arrSize);
-        blockArr[x, y].Init(1, blockSprites[1]);
-        blockCount++;
+        // 블럭(2) 생성
+        int x = Random.Range(0, mapSize);
+        int y = Random.Range(0, mapSize);
+        blockArr[x, y].Init(1, BlockSprites[1]);
+        BlockCount++;
 
+        // 블럭 랜덤 생성
         BlockSpawn();
 
-        state = EState.PLAYING;
+        State = EState.PLAYING;
     }
 
     public void GameOver()
@@ -344,17 +360,17 @@ public class Gamemanager : MonoBehaviour
 
     public void SetState(EState state)
     {
-        this.state = state;
+        this.State = state;
     }
 
     public void SetScore(int score)
     {
-        this.score += score;
-        text.text = this.score.ToString();
-        if (this.score >= bestScore)
+        this.curScore += score;
+        curScoreText.text = this.curScore.ToString();
+        if (this.curScore >= bestScore)
         {
-            bestScore = this.score;
-            PlayerPrefs.SetInt("BestScore", bestScore);
+            bestScore = this.curScore;
+            PlayerPrefs.SetInt("BestScore" + mapSize.ToString(), bestScore);
             bestScoreText.text = bestScore.ToString();
         }
     }
@@ -374,25 +390,25 @@ public class Gamemanager : MonoBehaviour
         switch (dir)
         {
             case EDir.LEFT:
-                if (verOvstacleArr[curX - 1, curY].isAlive)
+                if (verOvstacleArr[curX - 1, curY].IsAlive)
                 {
                     obstacle = true;
                 }
                 break;
             case EDir.RIGHT:
-                if (verOvstacleArr[curX, curY].isAlive)
+                if (verOvstacleArr[curX, curY].IsAlive)
                 {
                     obstacle = true;
                 }
                 break;
             case EDir.DOWN:
-                if (horObstacleArr[curX, curY].isAlive)
+                if (horObstacleArr[curX, curY].IsAlive)
                 {
                     obstacle = true;
                 }
                 break;
             case EDir.UP:
-                if (horObstacleArr[curX, curY-1].isAlive)
+                if (horObstacleArr[curX, curY-1].IsAlive)
                 {
                     obstacle = true;
                 }
