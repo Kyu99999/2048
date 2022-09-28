@@ -40,7 +40,6 @@ public class InputManager : MonoBehaviour
                 if (Input.GetMouseButtonDown(1))
                 {
                     DeleteBlock();
-                    Gamemanager.instance.Continue();
                 }
                 break;
             default:
@@ -58,6 +57,8 @@ public class InputManager : MonoBehaviour
             Block block = hit.collider.GetComponent<Block>();
             block.SetNode();
             Gamemanager.instance.BlockCount--;
+
+            Gamemanager.instance.Continue();
         }
     }
 

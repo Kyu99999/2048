@@ -55,8 +55,9 @@ public class Gamemanager : MonoBehaviour
 
     private int mapSize = 4;
 
+    [SerializeField]
     [Tooltip("CLEAR Á¶°Ç")]
-    public int clearScore = 2048;
+    private int clearScore = 2048;
 
     [SerializeField]
     [Range(1, 10)]
@@ -157,7 +158,7 @@ public class Gamemanager : MonoBehaviour
         }
     }
 
-    public void BlockSpawn()
+    private void BlockSpawn()
     {
         if (BlockCount < (mapSize * mapSize))
         {
@@ -186,7 +187,7 @@ public class Gamemanager : MonoBehaviour
         }
     }
 
-    public void MoveOrCombine(int curX, int curY, int nextX, int nextY, EDir dir) //Àç±Í
+    private void MoveOrCombine(int curX, int curY, int nextX, int nextY, EDir dir) //Àç±Í
     {
         Block curBlock = blockArr[curX, curY];
         Block nextBlock = blockArr[curX + nextX, curY + nextY];
@@ -257,7 +258,7 @@ public class Gamemanager : MonoBehaviour
         SceneManager.LoadScene(0);
     }
 
-    public bool CheckIsDead()
+    private bool CheckIsDead()
     {
         bool isDead = true;
 
@@ -288,7 +289,7 @@ public class Gamemanager : MonoBehaviour
         return isDead;
     }
 
-    public void Init()
+    private void Init()
     {
         bestScore = PlayerPrefs.GetInt("BestScore" + mapSize.ToString());
         bestScoreText.text = bestScore.ToString();
@@ -351,24 +352,24 @@ public class Gamemanager : MonoBehaviour
         State = EState.PLAYING;
     }
 
-    public void GameOver()
+    private void GameOver()
     {
         SetState(EState.GAMEOVER);
         gameOverUI.SetActive(true);
     }
 
-    public void Clear()
+    private void Clear()
     {
         SetState(EState.PAUSE);
         clearUI.SetActive(true);
     }
 
-    public void SetState(EState state)
+    private void SetState(EState state)
     {
         this.State = state;
     }
 
-    public void SetScore(int score)
+    private void SetScore(int score)
     {
         this.curScore += score;
         curScoreText.text = this.curScore.ToString();
@@ -388,7 +389,7 @@ public class Gamemanager : MonoBehaviour
     }
 
 
-    public bool CheckObstacle(int curX, int curY, EDir dir)
+    private bool CheckObstacle(int curX, int curY, EDir dir)
     {
         bool obstacle = false;
 

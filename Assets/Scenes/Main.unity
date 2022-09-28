@@ -1977,6 +1977,7 @@ MonoBehaviour:
   curScoreText: {fileID: 149146457}
   bestScoreText: {fileID: 114881216}
   clearScore: 2048
+  blockSpawnProbability: 7
 --- !u!4 &1442886503
 Transform:
   m_ObjectHideFlags: 0
