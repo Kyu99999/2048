@@ -58,6 +58,11 @@ public class Gamemanager : MonoBehaviour
     [Tooltip("CLEAR 조건")]
     public int clearScore = 2048;
 
+    [SerializeField]
+    [Range(1, 10)]
+    [Tooltip("2블록이 나올 확률")]
+    private int blockSpawnProbability = 7;
+
     private bool isBlockMove = false;
     
     private void Awake()
@@ -165,7 +170,7 @@ public class Gamemanager : MonoBehaviour
                     int randomNum = Random.Range(1, 11);
 
                     //70% 확률로 2
-                    if (randomNum >= 4)
+                    if (randomNum <= blockSpawnProbability)
                     {
                         blockArr[x, y].Init(1, BlockSprites[1]);
                     }
