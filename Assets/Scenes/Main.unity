@@ -1976,7 +1976,6 @@ MonoBehaviour:
   clearUI: {fileID: 129506842}
   curScoreText: {fileID: 149146457}
   bestScoreText: {fileID: 114881216}
-  mapSize: 4
   clearScore: 2048
 --- !u!4 &1442886503
 Transform:

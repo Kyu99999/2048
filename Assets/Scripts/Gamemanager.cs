@@ -237,7 +237,7 @@ public class Gamemanager : MonoBehaviour
 
             SetScore(nextBlock.Score);
 
-            if (curScore == clearScore)
+            if (nextBlock.Score == clearScore)
             {
                 Clear();
             }
