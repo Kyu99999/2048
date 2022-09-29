@@ -48,6 +48,8 @@ public class Gamemanager : MonoBehaviour
     private TextMeshProUGUI curScoreText;
     [SerializeField]
     private TextMeshProUGUI bestScoreText;
+    
+    public TextMeshProUGUI deleteCountText;
 
     public int BlockCount { get; set; } = 0;
     private int curScore = 0;
@@ -55,6 +57,9 @@ public class Gamemanager : MonoBehaviour
 
     private int mapSize = 4;
 
+    [field : SerializeField]
+    public int DeleteCount { get; set; } = 3;
+        
     [SerializeField]
     [Tooltip("CLEAR 조건")]
     private int clearScore = 2048;
@@ -74,6 +79,7 @@ public class Gamemanager : MonoBehaviour
     [SerializeField]
     private int maxRandomObstacleCount = 15;
 
+    private bool isObstacleOn;
     private bool isBlockMove = false;
 
     private void Awake()
@@ -157,15 +163,17 @@ public class Gamemanager : MonoBehaviour
                         }
                     }
 
-                    obstacleCount--;
-                    if (obstacleCount == 0)
+                    if (isObstacleOn)
                     {
-                        DeleteObstacle();
-                        SpawnObstacle();
+                        obstacleCount--;
+                        if (obstacleCount == 0)
+                        {
+                            DeleteObstacle();
+                            SpawnObstacle();
 
-                        obstacleCount = Random.Range(minRandomObstacleCount, maxRandomObstacleCount);
+                            obstacleCount = Random.Range(minRandomObstacleCount, maxRandomObstacleCount);
+                        }
                     }
-
                 }
 
                 break;
@@ -287,7 +295,7 @@ public class Gamemanager : MonoBehaviour
         {
             for (int x = 0; x < mapSize - 1; x++)
             {
-                if (blockArr[x, y].Score == blockArr[x + 1, y].Score)
+                if (blockArr[x, y].Score == blockArr[x + 1, y].Score && !verObstacleArr[x,y].IsAlive)
                 {
                     isDead = false;
                 }
@@ -299,7 +307,7 @@ public class Gamemanager : MonoBehaviour
         {
             for (int y = 0; y < mapSize - 1; y++)
             {
-                if (blockArr[x, y].Score == blockArr[x, y + 1].Score)
+                if (blockArr[x, y].Score == blockArr[x, y + 1].Score && !horObstacleArr[x,y].IsAlive)
                 {
                     isDead = false;
                 }
@@ -311,6 +319,8 @@ public class Gamemanager : MonoBehaviour
 
     private void Init()
     {
+        deleteCountText.text = DeleteCount.ToString(); 
+
         bestScore = PlayerPrefs.GetInt("BestScore" + mapSize.ToString());
         bestScoreText.text = bestScore.ToString();
 
@@ -370,7 +380,10 @@ public class Gamemanager : MonoBehaviour
         BlockSpawn();
 
         // 장애물 카운트 설정
+        isObstacleOn = MenuManager.instance.IsOnObstacle;
         obstacleCount = Random.Range(minRandomObstacleCount, maxRandomObstacleCount);
+
+        Destroy(MenuManager.instance.gameObject);
 
         State = EState.PLAYING;
     }

@@ -6,18 +6,42 @@ using TMPro;
 
 public class MenuManager : MonoBehaviour
 {
+    public static MenuManager instance;
+
     [SerializeField]
     private TextMeshProUGUI mapSizeText;
 
     private int startMapSize;
 
+    public bool IsOnObstacle { get; set; }
+
+    private void Awake()
+    {
+        if (instance == null)
+        {
+            instance = this;
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+    }
+
     // Start is called before the first frame update
     void Start()
     {
+        var obj = FindObjectsOfType<MenuManager>();
+        if (obj.Length == 1)
+        {
+            DontDestroyOnLoad(this);
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
         startMapSize = 3;
         mapSizeText.text = startMapSize + " X " + startMapSize;
     }
-
 
     public void GameStart()
     {
@@ -26,7 +50,7 @@ public class MenuManager : MonoBehaviour
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
     }
 
-    public void Increase()
+    public void IncreaseMapSize()
     {
         if (startMapSize < 10)
         {
@@ -35,7 +59,7 @@ public class MenuManager : MonoBehaviour
         }
     }
 
-    public void Decrease()
+    public void DecreaseMapSize()
     {
         if (startMapSize > 3)
         {
