@@ -30,7 +30,7 @@ public class Gamemanager : MonoBehaviour
     private Block[,] blockArr;
     private Obstacle[,] horObstacleArr;
     private Obstacle[,] verObstacleArr;
-   
+
     [field: SerializeField]
     public Sprite[] BlockSprites { get; private set; }
 
@@ -64,8 +64,18 @@ public class Gamemanager : MonoBehaviour
     [Tooltip("2블록이 나올 확률")]
     private int blockSpawnProbability = 7;
 
+    [SerializeField]
+    [Range(0, 4)]
+    private int numberofObstacle = 2;
+
+    private int obstacleCount;
+    [SerializeField]
+    private int minRandomObstacleCount = 10;
+    [SerializeField]
+    private int maxRandomObstacleCount = 15;
+
     private bool isBlockMove = false;
-    
+
     private void Awake()
     {
         if (instance == null)
@@ -146,6 +156,16 @@ public class Gamemanager : MonoBehaviour
                             GameOver();
                         }
                     }
+
+                    obstacleCount--;
+                    if (obstacleCount == 0)
+                    {
+                        DeleteObstacle();
+                        SpawnObstacle();
+
+                        obstacleCount = Random.Range(minRandomObstacleCount, maxRandomObstacleCount);
+                    }
+
                 }
 
                 break;
@@ -201,7 +221,7 @@ public class Gamemanager : MonoBehaviour
             nextBlock.transform.position = new Vector3(curX, -curY, 0);
             blockArr[curX + nextX, curY + nextY] = curBlock;
             blockArr[curX, curY] = nextBlock;
-           
+
             isBlockMove = true;
 
             switch (dir)
@@ -328,7 +348,7 @@ public class Gamemanager : MonoBehaviour
         {
             for (int j = 0; j < mapSize - 1; j++)
             {
-                GameObject obs = Instantiate(obstaclePrefab, new Vector3(i , -j - 1 / 2f, 0), Quaternion.identity);
+                GameObject obs = Instantiate(obstaclePrefab, new Vector3(i, -j - 1 / 2f, 0), Quaternion.identity);
                 horObstacleArr[i, j] = obs.GetComponent<Obstacle>();
                 horObstacleArr[i, j].SetBlock(BLOCKTYPE.HORIZONTAL);
                 horObstacleArr[i, j].SetActive(false);
@@ -348,6 +368,9 @@ public class Gamemanager : MonoBehaviour
 
         // 블럭 랜덤 생성
         BlockSpawn();
+
+        // 장애물 카운트 설정
+        obstacleCount = Random.Range(minRandomObstacleCount, maxRandomObstacleCount);
 
         State = EState.PLAYING;
     }
@@ -414,7 +437,7 @@ public class Gamemanager : MonoBehaviour
                 }
                 break;
             case EDir.UP:
-                if (horObstacleArr[curX, curY-1].IsAlive)
+                if (horObstacleArr[curX, curY - 1].IsAlive)
                 {
                     obstacle = true;
                 }
@@ -425,4 +448,71 @@ public class Gamemanager : MonoBehaviour
 
         return obstacle;
     }
+
+    private void DeleteObstacle()
+    {
+        for (int i = 0; i < mapSize - 1; i++)
+        {
+            for (int j = 0; j < mapSize; j++)
+            {
+                verObstacleArr[i, j].SetActive(false);
+            }
+        }
+
+        for (int i = 0; i < mapSize; i++)
+        {
+            for (int j = 0; j < mapSize - 1; j++)
+            {
+                horObstacleArr[i, j].SetActive(false);
+            }
+        }
+    }
+
+    // ObstacleCount가 0이 되면 SpawnObstacle 실행
+    private void SpawnObstacle()
+    {
+        int randomAxis;
+        int posX;
+        int posY;
+
+        for (int i = 0; i < numberofObstacle; i++)
+        {
+            randomAxis = Random.Range(0, 2);
+            switch (randomAxis)
+            {
+                // vertical Obstacle
+                case 0:
+                    while (true)
+                    {
+                        posX = Random.Range(0, mapSize - 1);
+                        posY = Random.Range(0, mapSize);
+
+                        if (!verObstacleArr[posX, posY].IsAlive)
+                        {
+                            verObstacleArr[posX, posY].SetActive(true);
+                            break;
+                        }
+                    }
+                    break;
+                // horizontal Obstacle
+                case 1:
+                    while (true)
+                    {
+                        posX = Random.Range(0, mapSize);
+                        posY = Random.Range(0, mapSize - 1);
+
+                        if (!horObstacleArr[posX, posY].IsAlive)
+                        {
+                            horObstacleArr[posX, posY].SetActive(true);
+                            break;
+                        }
+                    }
+                    break;
+                default:
+                    break;
+            }
+
+        }
+    }
+
 }
