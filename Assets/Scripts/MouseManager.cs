@@ -81,13 +81,17 @@ public class MouseManager : MonoBehaviour
         if (hit && hit.collider.CompareTag("Block") && deleteCount > 0 && blockCount > 1)
         {
             Block block = hit.collider.GetComponent<Block>();
-            block.SetNode();
-            Gamemanager.instance.BlockCount--;
 
-            Gamemanager.instance.DeleteCount--;
-            Gamemanager.instance.deleteCountText.text = Gamemanager.instance.DeleteCount.ToString();
+            if (block.Score > 0)
+            {
+                block.SetNode();
+                Gamemanager.instance.BlockCount--;
 
-            Gamemanager.instance.Continue();
+                Gamemanager.instance.DeleteCount--;
+                Gamemanager.instance.deleteCountText.text = Gamemanager.instance.DeleteCount.ToString();
+
+                Gamemanager.instance.Continue();
+            }
         }
     }
 
